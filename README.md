@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Professional Grading System
+
+A modern, industry-standard grading system built with Next.js, TypeScript, and Prisma.
+
+## Features
+
+- **Teacher Authentication**: Secure login and signup system
+- **Professional UI**: Clean blue and white color scheme
+- **Responsive Design**: Works on all device sizes
+- **Section Management**: Navigate between different sections
+- **Modern Architecture**: Built with Next.js 15 and TypeScript
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: Custom implementation with bcryptjs
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+ 
+- PostgreSQL database
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   Create a `.env` file in the root directory:
+   ```env
+   DATABASE_URL="postgresql://username:password@localhost:5432/gradingsystem"
+   ```
+
+4. Set up the database:
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
+
+5. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Usage
+
+1. **Sign Up**: Create a new teacher account
+2. **Login**: Sign in with your credentials
+3. **Dashboard**: Access the main dashboard with section navigation
+4. **Navigation**: Use the left sidebar to switch between sections
+
+## Project Structure
+
+```
+app/
+├── api/auth/          # Authentication API routes
+├── components/        # Reusable UI components
+├── dashboard/         # Main dashboard page
+├── login/            # Login page
+├── signup/           # Signup page
+├── lib/              # Utility functions and Prisma client
+└── globals.css       # Global styles
+
+prisma/
+└── schema.prisma     # Database schema
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database Schema
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The system includes the following models:
+- **Teachers**: Teacher accounts and authentication
+- **Section**: Class sections managed by teachers
+- **Students**: Students enrolled in sections
+- **Grade**: Student grades and academic records
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Contributing
 
-## Learn More
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.# gradingsystem
