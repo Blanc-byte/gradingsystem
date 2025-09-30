@@ -46,8 +46,8 @@ A modern, industry-standard grading system built with Next.js, TypeScript, and P
    ```
 
 5. Run the development server:
-   ```bash
-   npm run dev
+```bash
+npm run dev
    ```
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser
@@ -92,4 +92,4 @@ The system includes the following models:
 
 ## License
 
-This project is licensed under the MIT License.# gradingsystem
+This project is licensed under the MIT License.

@@ -47,5 +47,13 @@ model Grade {
   studentId Int
   grade     Float
   quarter   Int
+  subjectId Int
+  subject   Subjects @relation(fields: [subjectId], references: [id])
   student   Students @relation(fields: [studentId], references: [id])
+}
+
+model Subjects {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  grades    Grade[]
 }

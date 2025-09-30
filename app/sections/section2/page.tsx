@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import ToastProvider, { useToast } from '@/app/components/ToastProvider'
 import { useRouter } from 'next/navigation'
 
 interface Teacher { id: number; fullname: string; username: string; role: string }
 interface Section { id: number; name: string; grade_year: number; teacherId: number; locked?: boolean; sy?: string }
 
-export default function Section2Page() {
+function Section2Inner() {
+  const { show } = useToast()
 	const [teacher, setTeacher] = useState<Teacher | null>(null)
 	const [sections, setSections] = useState<Section[]>([])
 	const [loading, setLoading] = useState(true)
@@ -18,6 +20,7 @@ export default function Section2Page() {
 	const router = useRouter()
 	const [renameOpen, setRenameOpen] = useState(false)
 	const [renameValue, setRenameValue] = useState('')
+	const [renameSy, setRenameSy] = useState('')
 
 	useEffect(() => {
 		const t = localStorage.getItem('teacher')
@@ -36,8 +39,8 @@ export default function Section2Page() {
 			const data = await res.json()
 			if (!res.ok) throw new Error(data.error || 'Failed to load sections')
 			setSections(data.sections)
-		} catch (e: any) {
-			setError(e.message)
+    } catch (e: any) {
+      show(e.message || 'Failed to load sections')
 		} finally {
 			setLoading(false)
 		}
@@ -61,8 +64,8 @@ export default function Section2Page() {
 			setNewSectionName('')
 			// Redirect to the section profile page
 			router.push(`/sections/section2/${data.section.id}`)
-		} catch (e: any) {
-			setError(e.message)
+    } catch (e: any) {
+      show(e.message || 'Failed to create section')
 		}
 	}
 
@@ -70,14 +73,14 @@ async function submitRename(sectionId: number) {
     const res = await fetch(`/api/sections/${sectionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: renameValue }),
+        body: JSON.stringify({ name: renameValue, sy: renameSy }),
     })
     const data = await res.json()
     if (res.ok) {
         setSections((prev) => prev.map((s) => (s.id === sectionId ? data.section : s)))
         setRenameOpen(false)
     } else {
-        setError(data.error || 'Failed to update section')
+      setError(data.error || 'Failed to update section')
     }
 }
 
@@ -85,9 +88,9 @@ async function submitRename(sectionId: number) {
 		const res = await fetch(`/api/sections/${sectionId}`, { method: 'DELETE' })
 		if (res.ok) {
 			setSections((prev) => prev.filter((s) => s.id !== sectionId))
-		} else {
-			const data = await res.json()
-			setError(data.error || 'Failed to delete section')
+    } else {
+      const data = await res.json()
+      show(data.error || 'Failed to delete section')
 		}
 	}
 
@@ -143,7 +146,7 @@ async function submitRename(sectionId: number) {
 							</div>
 						<div className="mt-6 flex items-center justify-center gap-4">
 							<Link href={`/sections/section2/${sections[0].id}`} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Open Profile</Link>
-							<button onClick={() => { setRenameValue(sections[0].name); setRenameOpen(true) }} className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">Rename</button>
+							<button onClick={() => { setRenameValue(sections[0].name); setRenameSy(sections[0].sy || ''); setRenameOpen(true) }} className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">Edit</button>
 						</div>
 						</div>
 					)}
@@ -153,11 +156,20 @@ async function submitRename(sectionId: number) {
 			{renameOpen && sections[0] && (
 				<div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 					<div className="bg-white w-full max-w-sm rounded-lg shadow-lg p-5">
-						<h3 className="text-lg font-semibold text-gray-900 mb-3">Rename Section</h3>
+						<h3 className="text-lg font-semibold text-gray-900 mb-3">Edit Section</h3>
 						<input
 							type="text"
 							value={renameValue}
 							onChange={(e) => setRenameValue(e.target.value)}
+							className="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+						/>
+						<label htmlFor="edit-sy" className="sr-only">School Year</label>
+						<input
+							id="edit-sy"
+							type="text"
+							placeholder="School Year (e.g., 2024-2025)"
+							value={renameSy}
+							onChange={(e) => setRenameSy(e.target.value)}
 							className="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
 						/>
 						<div className="flex justify-end gap-2">
@@ -168,11 +180,16 @@ async function submitRename(sectionId: number) {
 				</div>
 			)}
 
-			{error && (
-				<div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
-			)}
 		</div>
 	)
+}
+
+export default function Section2Page() {
+  return (
+    <ToastProvider>
+      <Section2Inner />
+    </ToastProvider>
+  )
 }
 
 

@@ -11,7 +11,7 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
   const sections = [
     { id: 'section1', name: 'Section 1' },
     { id: 'section2', name: 'My Section' },
-    { id: 'section3', name: 'Section 3' },
+    { id: 'section3', name: 'Submit Grades' },
     { id: 'section4', name: 'Section 4' },
     { id: 'section5', name: 'Section 5' }
   ]

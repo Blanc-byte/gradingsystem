@@ -4,8 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 
 // GET /api/sections/:id → fetch single section
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
-  const id = Number(params.id)
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id: idStr } = await context.params
+  const id = Number(idStr)
   if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
   try {
     const section = await prisma.section.findUnique({ where: { id } })
@@ -17,8 +18,9 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 }
 
 // PATCH /api/sections/:id
-export async function PATCH(_request: NextRequest, { params }: { params: { id: string } }) {
-  const id = Number(params.id)
+export async function PATCH(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id: idStr } = await context.params
+  const id = Number(idStr)
   if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
   try {
     const body = await _request.json()
@@ -35,8 +37,9 @@ export async function PATCH(_request: NextRequest, { params }: { params: { id: s
 }
 
 // DELETE /api/sections/:id
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
-  const id = Number(params.id)
+export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id: idStr } = await context.params
+  const id = Number(idStr)
   if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
   try {
     await prisma.section.delete({ where: { id } })

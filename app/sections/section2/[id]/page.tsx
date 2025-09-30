@@ -1,12 +1,14 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import ToastProvider, { useToast } from '@/app/components/ToastProvider'
 import { useParams } from 'next/navigation'
 
 interface Section { id: number; name: string; grade_year: number; teacherId: number; locked?: boolean; sy?: string }
-interface Student { id: number; fullname: string; sectionId: number; grades?: { quarter: number; grade: number }[] }
+interface Student { id: number; fullname: string; sectionId: number; grades?: { quarter: number; grade: number }[]; quarters?: Record<number, number | null> }
 
-export default function SectionProfilePage() {
+function SectionProfileInner() {
+  const { show } = useToast()
   const params = useParams<{ id: string }>()
   const sectionId = Number(params.id)
   const [section, setSection] = useState<Section | null>(null)
@@ -17,12 +19,20 @@ export default function SectionProfilePage() {
   const [editingStudentId, setEditingStudentId] = useState<number | null>(null)
   const [editingStudentName, setEditingStudentName] = useState('')
   const [toggling, setToggling] = useState(false)
+  const [subjects, setSubjects] = useState<Array<{ id: number; name: string }>>([])
+  const [filterSubjectId, setFilterSubjectId] = useState<number | ''>('')
 
   useEffect(() => {
     if (!sectionId) return
     void loadSection()
     void loadStudents()
+    void loadSubjects()
   }, [sectionId])
+
+  useEffect(() => {
+    if (!sectionId) return
+    void loadStudents()
+  }, [filterSubjectId])
 
   async function loadSection() {
     try {
@@ -32,7 +42,7 @@ export default function SectionProfilePage() {
       if (!res.ok) throw new Error(data.error || 'Failed to fetch section')
       setSection(data.section as Section)
     } catch (e: any) {
-      setError(e.message)
+      show(e.message || 'Failed to fetch section')
       setSection(null)
     } finally {
       setLoadingSection(false)
@@ -41,12 +51,33 @@ export default function SectionProfilePage() {
 
   async function loadStudents() {
     try {
-      const res = await fetch(`/api/section-students?sectionId=${sectionId}`)
+      if (!filterSubjectId) {
+        setStudents([])
+        return
+      }
+      const params = new URLSearchParams()
+      params.set('sectionId', String(sectionId))
+      params.set('subjectId', String(filterSubjectId))
+      const res = await fetch(`/api/section-students?${params.toString()}`, { cache: 'no-store' })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to fetch students')
       setStudents(data.students)
     } catch (e: any) {
-      setError(e.message)
+      show(e.message || 'Failed to fetch students')
+    }
+  }
+
+  async function loadSubjects() {
+    try {
+      const res = await fetch(`/api/section-subjects?sectionId=${sectionId}`, { cache: 'no-store' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch subjects')
+      setSubjects(data.subjects)
+      if (data.subjects && data.subjects.length > 0) {
+        setFilterSubjectId((prev) => (prev ? prev : data.subjects[0].id))
+      }
+    } catch (e: any) {
+      show(e.message || 'Failed to fetch subjects')
     }
   }
 
@@ -63,7 +94,7 @@ export default function SectionProfilePage() {
       setStudents((prev) => [data.student, ...prev])
       setStudentName('')
     } else {
-      setError(data.error || 'Failed to add student')
+      show(data.error || 'Failed to add student')
     }
   }
 
@@ -81,7 +112,7 @@ export default function SectionProfilePage() {
       setEditingStudentId(null)
       setEditingStudentName('')
     } else {
-      setError(data.error || 'Failed to update student')
+      show(data.error || 'Failed to update student')
     }
   }
 
@@ -91,7 +122,7 @@ export default function SectionProfilePage() {
       setStudents((prev) => prev.filter((s) => s.id !== studentId))
     } else {
       const data = await res.json()
-      setError(data.error || 'Failed to delete student')
+      show(data.error || 'Failed to delete student')
     }
   }
 
@@ -108,7 +139,7 @@ export default function SectionProfilePage() {
       if (!res.ok) throw new Error(data.error || 'Failed to update lock')
       setSection(data.section)
     } catch (e: any) {
-      setError(e.message)
+      show(e.message || 'Failed to update lock')
     } finally {
       setToggling(false)
     }
@@ -139,6 +170,17 @@ export default function SectionProfilePage() {
 
       <div className="bg-white border border-gray-200 rounded-lg">
         <div className="p-4 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <select
+              value={filterSubjectId}
+              onChange={(e) => setFilterSubjectId(e.target.value ? Number(e.target.value) : '')}
+              className="w-full sm:w-60 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
           <form className="flex flex-col sm:flex-row gap-3" onSubmit={editingStudentId ? handleUpdateStudent : handleAddStudent}>
             <input
               type="text"
@@ -173,10 +215,10 @@ export default function SectionProfilePage() {
                 <tr key={s.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{idx + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{s.fullname}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = (s.grades || []).find(g => g.quarter === 1)?.grade; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = (s.grades || []).find(g => g.quarter === 1)?.grade; return v == null ? 'none' : v })()}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = (s.grades || []).find(g => g.quarter === 2)?.grade; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = (s.grades || []).find(g => g.quarter === 2)?.grade; return v == null ? 'none' : v })()}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = (s.grades || []).find(g => g.quarter === 3)?.grade; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = (s.grades || []).find(g => g.quarter === 3)?.grade; return v == null ? 'none' : v })()}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = (s.grades || []).find(g => g.quarter === 4)?.grade; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = (s.grades || []).find(g => g.quarter === 4)?.grade; return v == null ? 'none' : v })()}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = s.quarters?.[1] ?? null; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = s.quarters?.[1] ?? null; return v == null ? 'none' : v })()}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = s.quarters?.[2] ?? null; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = s.quarters?.[2] ?? null; return v == null ? 'none' : v })()}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = s.quarters?.[3] ?? null; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = s.quarters?.[3] ?? null; return v == null ? 'none' : v })()}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = s.quarters?.[4] ?? null; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = s.quarters?.[4] ?? null; return v == null ? 'none' : v })()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                     <button onClick={() => { setEditingStudentId(s.id); setEditingStudentName(s.fullname) }} className="text-blue-600 hover:underline mr-3">Edit</button>
                     <button onClick={() => handleDeleteStudent(s.id)} className="text-red-600 hover:underline">Delete</button>
@@ -193,10 +235,15 @@ export default function SectionProfilePage() {
         </div>
       </div>
 
-      {error && (
-        <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
-      )}
     </div>
+  )
+}
+
+export default function SectionProfilePage() {
+  return (
+    <ToastProvider>
+      <SectionProfileInner />
+    </ToastProvider>
   )
 }
 
