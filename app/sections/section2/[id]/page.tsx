@@ -149,93 +149,182 @@ function SectionProfileInner() {
   if (!section) return <div>Section not found.</div>
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold text-gray-900">{section.name}</h1>
-        <button
-          onClick={toggleLock}
-          disabled={toggling}
-          className={`px-3 py-1.5 rounded-lg text-sm border ${section.locked ? 'bg-gray-100 text-gray-700 border-gray-300' : 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'}`}
+    <div className="space-y-6">
+  {/* Header with lock button */}
+  <div className="flex items-center justify-between">
+    <h1 className="text-2xl font-bold text-blue-800">{section.name}</h1>
+    <button
+      onClick={toggleLock}
+      disabled={toggling}
+      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+        section.locked
+          ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+          : "bg-red-600 text-white border-red-600 hover:bg-red-700"
+      }`}
+    >
+      {section.locked ? "Unlock" : "Lock"}
+    </button>
+  </div>
+
+  {/* Section meta */}
+  <div className="text-sm text-gray-600 flex items-center gap-4">
+    <span className="font-medium text-gray-700">Grade Year: {section.grade_year}</span>
+    <span className="font-medium text-gray-700">School Year: {section.sy || "—"}</span>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        section.locked
+          ? "bg-red-200 text-gray-700"
+          : "bg-green-100 text-green-700"
+      }`}
+    >
+      {section.locked ? "Locked" : "Unlocked"}
+    </span>
+  </div>
+
+  {/* Card container */}
+  <div className="bg-white border border-blue-100 rounded-xl shadow-sm">
+    {/* Filters and add student */}
+    <div className="p-5 border-b border-blue-100 space-y-4">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <select
+          value={filterSubjectId}
+          onChange={(e) =>
+            setFilterSubjectId(e.target.value ? Number(e.target.value) : "")
+          }
+          className="w-full sm:w-60 px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          {section.locked ? 'Unlock' : 'Lock'}
+          {subjects.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <form
+        className="flex flex-col sm:flex-row gap-3"
+        onSubmit={editingStudentId ? handleUpdateStudent : handleAddStudent}
+      >
+        <input
+          type="text"
+          placeholder={
+            editingStudentId ? "Edit student name" : "Add student name"
+          }
+          value={editingStudentId ? editingStudentName : studentName}
+          onChange={(e) =>
+            editingStudentId
+              ? setEditingStudentName(e.target.value)
+              : setStudentName(e.target.value)
+          }
+          className="flex-1 px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          type="submit"
+          className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
+        >
+          {editingStudentId ? "Update" : "Add Student"}
         </button>
-      </div>
-      <div className="text-sm text-gray-600 mb-6 flex items-center gap-3">
-        <span>Grade Year: {section.grade_year}</span>
-        <span>School Year: {section.sy || '—'}</span>
-        <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs ${section.locked ? 'bg-gray-200 text-gray-700' : 'bg-green-100 text-green-700'}`}>
-          {section.locked ? 'Locked' : 'Unlocked'}
-        </span>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-lg">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <select
-              value={filterSubjectId}
-              onChange={(e) => setFilterSubjectId(e.target.value ? Number(e.target.value) : '')}
-              className="w-full sm:w-60 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {subjects.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-          </div>
-          <form className="flex flex-col sm:flex-row gap-3" onSubmit={editingStudentId ? handleUpdateStudent : handleAddStudent}>
-            <input
-              type="text"
-              placeholder={editingStudentId ? 'Edit student name' : 'Add student name'}
-              value={editingStudentId ? editingStudentName : studentName}
-              onChange={(e) => (editingStudentId ? setEditingStudentName(e.target.value) : setStudentName(e.target.value))}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-              {editingStudentId ? 'Update' : 'Add Student'}
-            </button>
-            {editingStudentId && (
-              <button type="button" onClick={() => { setEditingStudentId(null); setEditingStudentName('') }} className="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">Cancel</button>
-            )}
-          </form>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">1st</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">2nd</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">3rd</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">4th</th>
-                <th className="px-6 py-3"/>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {students.map((s, idx) => (
-                <tr key={s.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{idx + 1}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{s.fullname}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = s.quarters?.[1] ?? null; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = s.quarters?.[1] ?? null; return v == null ? 'none' : v })()}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = s.quarters?.[2] ?? null; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = s.quarters?.[2] ?? null; return v == null ? 'none' : v })()}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = s.quarters?.[3] ?? null; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = s.quarters?.[3] ?? null; return v == null ? 'none' : v })()}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${(() => { const v = s.quarters?.[4] ?? null; return v == null ? 'text-gray-700' : v < 75 ? 'text-red-600 font-medium' : v > 90 ? 'text-blue-600 font-semibold' : 'text-gray-800' })()}`}>{(() => { const v = s.quarters?.[4] ?? null; return v == null ? 'none' : v })()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                    <button onClick={() => { setEditingStudentId(s.id); setEditingStudentName(s.fullname) }} className="text-blue-600 hover:underline mr-3">Edit</button>
-                    <button onClick={() => handleDeleteStudent(s.id)} className="text-red-600 hover:underline">Delete</button>
-                  </td>
-                </tr>
-              ))}
-              {students.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-6 py-10 text-center text-gray-500">No students yet.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+        {editingStudentId && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditingStudentId(null);
+              setEditingStudentName("");
+            }}
+            className="px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium hover:bg-blue-100 transition-colors"
+          >
+            Cancel
+          </button>
+        )}
+      </form>
     </div>
+
+    {/* Table */}
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200 text-sm">
+        <thead className="bg-blue-50">
+          <tr>
+            <th className="px-6 py-3 text-left font-semibold text-blue-800 uppercase tracking-wide">
+              #
+            </th>
+            <th className="px-6 py-3 text-left font-semibold text-blue-800 uppercase tracking-wide">
+              Student Name
+            </th>
+            <th className="px-6 py-3 text-center font-semibold text-blue-800 uppercase tracking-wide">
+              1st
+            </th>
+            <th className="px-6 py-3 text-center font-semibold text-blue-800 uppercase tracking-wide">
+              2nd
+            </th>
+            <th className="px-6 py-3 text-center font-semibold text-blue-800 uppercase tracking-wide">
+              3rd
+            </th>
+            <th className="px-6 py-3 text-center font-semibold text-blue-800 uppercase tracking-wide">
+              4th
+            </th>
+            <th />
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {students.map((s, idx) => (
+            <tr key={s.id} className="hover:bg-blue-50/40 transition">
+              <td className="px-6 py-4 text-gray-600">{idx + 1}</td>
+              <td className="px-6 py-4 text-gray-900 font-medium">{s.fullname}</td>
+              {[1, 2, 3, 4].map((q) => {
+                const v = s.quarters?.[q] ?? null;
+                return (
+                  <td
+                    key={q}
+                    className={`px-6 py-4 text-center ${
+                      v == null
+                        ? "text-gray-500 italic"
+                        : v < 75
+                        ? "text-red-600 font-semibold"
+                        : v > 90
+                        ? "text-blue-700 font-semibold"
+                        : "text-gray-800"
+                    }`}
+                  >
+                    {v == null ? "—" : v}
+                  </td>
+                );
+              })}
+              <td className="px-6 py-4 text-right space-x-3">
+                <button
+                  onClick={() => {
+                    setEditingStudentId(s.id);
+                    setEditingStudentName(s.fullname);
+                  }}
+                  className="text-blue-600 hover:underline"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteStudent(s.id)}
+                  className="text-red-600 hover:underline"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+
+          {students.length === 0 && (
+            <tr>
+              <td
+                colSpan={7}
+                className="px-6 py-10 text-center text-gray-500 italic"
+              >
+                No students yet.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
   )
 }
 

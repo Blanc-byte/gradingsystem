@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import ToastProvider, { useToast } from '@/app/components/ToastProvider'
 import { useRouter } from 'next/navigation'
+import SectionLoadingScreen from '@/app/components/SectionLoadingScreen'
 
 interface Teacher { id: number; fullname: string; username: string; role: string }
 interface Section { id: number; name: string; grade_year: number; teacherId: number; locked?: boolean; sy?: string }
@@ -94,93 +95,115 @@ async function submitRename(sectionId: number) {
 		}
 	}
 
+	if (loading) {
+		return <SectionLoadingScreen />
+	}
+
 	return (
-		<div>
-			<h1 className="text-2xl font-bold text-gray-900 mb-4"></h1>
-
-
-
+		<div className="h-100 bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4">
 			{/* Only one section allowed. If none, show centered create button. */}
-			{!loading && sections.length === 0 ? (
-				<div className="flex items-center justify-center py-20">
-					<form onSubmit={handleAddSection} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm w-full max-w-md">
-						<h2 className="text-lg font-semibold text-gray-900 mb-4">Create my section</h2>
-						<input
-							type="text"
-							placeholder="Section name"
-							value={newSectionName}
-							onChange={(e) => setNewSectionName(e.target.value)}
-							className="w-full mb-3 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-						<label htmlFor="gradeYear" className="sr-only">Grade Level (7-12)</label>
-						<input
-							id="gradeYear"
-							type="number"
-							min={7}
-							max={12}
-							placeholder="Grade Level (7-12)"
-							value={newSectionGrade}
-							onChange={(e) => setNewSectionGrade(Number(e.target.value))}
-							className="w-full mb-3 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-						<label htmlFor="sy" className="sr-only">School Year</label>
-						<input
-							id="sy"
-							type="text"
-							placeholder="School Year (e.g., 2024-2025)"
-							value={newSectionSy}
-							onChange={(e) => setNewSectionSy(e.target.value)}
-							className="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-						<button type="submit" className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Create Section</button>
-					</form>
+			{sections.length === 0 ? (
+				<div className="w-full max-w-md bg-white rounded-2xl shadow-md border border-blue-100 p-8">
+				<h2 className="text-xl font-bold text-blue-800 mb-6 text-center">Create Your Section</h2>
+				<form onSubmit={handleAddSection} className="space-y-4">
+					<input
+					type="text"
+					placeholder="Section Name"
+					value={newSectionName}
+					onChange={(e) => setNewSectionName(e.target.value)}
+					className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+					<input
+					type="number"
+					min={7}
+					max={12}
+					placeholder="Grade Level (7-12)"
+					value={newSectionGrade}
+					onChange={(e) => setNewSectionGrade(Number(e.target.value))}
+					className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+					<input
+					type="text"
+					placeholder="School Year (e.g., 2024-2025)"
+					value={newSectionSy}
+					onChange={(e) => setNewSectionSy(e.target.value)}
+					className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+					<button
+					type="submit"
+					className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
+					>
+					Create Section
+					</button>
+				</form>
 				</div>
 			) : (
-				<div className="flex items-center justify-center py-20">
-					{sections[0] && (
-						<div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm w-full max-w-md">
-							<div className="text-center">
-								<div className="text-xl font-semibold text-gray-900">{sections[0].name}</div>
-								<div className="mt-1 text-sm text-gray-500">Grade Year: {sections[0].grade_year}</div>
-								<div className="mt-1 text-sm text-gray-500">School Year: {sections[0].sy || '—'}</div>
-							</div>
-						<div className="mt-6 flex items-center justify-center gap-4">
-							<Link href={`/sections/section2/${sections[0].id}`} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Open Profile</Link>
-							<button onClick={() => { setRenameValue(sections[0].name); setRenameSy(sections[0].sy || ''); setRenameOpen(true) }} className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">Edit</button>
-						</div>
-						</div>
-					)}
+				<div className="w-full max-w-md bg-white rounded-2xl shadow-md border border-blue-100 p-8 text-center">
+				{sections[0] && (
+					<>
+					<h3 className="text-2xl font-bold text-blue-800">{sections[0].name}</h3>
+					<p className="mt-2 text-gray-600">Grade Year: {sections[0].grade_year}</p>
+					<p className="mt-1 text-gray-600">School Year: {sections[0].sy || "—"}</p>
+
+					<div className="mt-6 flex items-center justify-center gap-4">
+						<Link
+						href={`/sections/section2/${sections[0].id}`}
+						className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
+						>
+						Open Profile
+						</Link>
+						<button
+						onClick={() => {
+							setRenameValue(sections[0].name);
+							setRenameSy(sections[0].sy || "");
+							setRenameOpen(true);
+						}}
+						className="px-5 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium hover:bg-blue-100 transition-colors"
+						>
+						Edit
+						</button>
+					</div>
+					</>
+				)}
 				</div>
 			)}
 
 			{renameOpen && sections[0] && (
-				<div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-					<div className="bg-white w-full max-w-sm rounded-lg shadow-lg p-5">
-						<h3 className="text-lg font-semibold text-gray-900 mb-3">Edit Section</h3>
-						<input
-							type="text"
-							value={renameValue}
-							onChange={(e) => setRenameValue(e.target.value)}
-							className="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-						<label htmlFor="edit-sy" className="sr-only">School Year</label>
-						<input
-							id="edit-sy"
-							type="text"
-							placeholder="School Year (e.g., 2024-2025)"
-							value={renameSy}
-							onChange={(e) => setRenameSy(e.target.value)}
-							className="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-						<div className="flex justify-end gap-2">
-							<button onClick={() => setRenameOpen(false)} className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">Cancel</button>
-							<button onClick={() => submitRename(sections[0].id)} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Save</button>
-						</div>
+				<div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+				<div className="bg-white w-full max-w-sm rounded-2xl shadow-lg p-6 border border-blue-100">
+					<h3 className="text-lg font-semibold text-blue-800 mb-4">Edit Section</h3>
+					<input
+					type="text"
+					value={renameValue}
+					onChange={(e) => setRenameValue(e.target.value)}
+					className="w-full mb-3 px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+					<input
+					type="text"
+					placeholder="School Year (e.g., 2024-2025)"
+					value={renameSy}
+					onChange={(e) => setRenameSy(e.target.value)}
+					className="w-full mb-4 px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+					<div className="flex justify-end gap-2">
+					<button
+						onClick={() => setRenameOpen(false)}
+						className="px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium hover:bg-blue-100 transition-colors"
+					>
+						Cancel
+					</button>
+					<button
+						onClick={() => submitRename(sections[0].id)}
+						className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
+					>
+						Save
+					</button>
 					</div>
 				</div>
+				</div>
 			)}
+			</div>
 
-		</div>
 	)
 }
 

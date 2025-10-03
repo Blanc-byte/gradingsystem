@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ToastProvider, { useToast } from '@/app/components/ToastProvider'
+import SectionLoadingScreen from '@/app/components/SectionLoadingScreen'
 
 interface SectionRow {
   id: number
@@ -97,14 +98,17 @@ function SubmitGradeInner() {
       const res = await fetch(`/api/grades/exists?${params.toString()}`, { cache: 'no-store' })
       const data = await res.json()
       if (res.ok && data.exists) {
-        show(`Grades already exist for ${data.count} student(s) in this quarter.`)
-        return
+        show(`Opening grade editor - ${data.count} student(s) already have grades for this quarter.`)
       }
       setSelectOpen(false)
       router.push(`/sections/section3/submit?${params.toString()}`)
     } catch (e: any) {
       show(e.message || 'Failed to check existing grades')
     }
+  }
+
+  if (loading) {
+    return <SectionLoadingScreen />
   }
 
   return (

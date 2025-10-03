@@ -26,10 +26,22 @@ function SubmitInner() {
 
   async function loadStudents() {
     try {
-      const res = await fetch(`/api/section-students?sectionId=${sectionId}`, { cache: 'no-store' })
+      const res = await fetch(`/api/section-students?sectionId=${sectionId}&subjectId=${subjectId}`, { cache: 'no-store' })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to load students')
-      setStudents(data.students.map((s: any) => ({ id: s.id, fullname: s.fullname })))
+      
+      const studentsData = data.students.map((s: any) => ({ id: s.id, fullname: s.fullname }))
+      setStudents(studentsData)
+      
+      // Pre-fill existing grades for this quarter
+      const existingGrades: Record<number, string> = {}
+      data.students.forEach((s: any) => {
+        const existingGrade = s.quarters?.[quarter]
+        if (existingGrade !== null && existingGrade !== undefined) {
+          existingGrades[s.id] = String(existingGrade)
+        }
+      })
+      setGrades(existingGrades)
     } catch (e: any) {
       show(e.message || 'Failed to load students')
     } finally {
@@ -43,29 +55,35 @@ function SubmitInner() {
 
   async function submitGrades() {
     try {
-      // Require a grade for every listed student
-      const missing = students.filter((s) => {
-        const v = grades[s.id]
-        return v === undefined || v === '' || Number.isNaN(Number(v))
-      })
-      if (missing.length > 0) {
-        show('Please enter grades for all students before submitting')
+      // Only submit grades for students who have values entered
+      const gradesToSubmit = students
+        .map((s) => {
+          const gradeValue = grades[s.id]
+          if (gradeValue && gradeValue.trim() !== '' && !Number.isNaN(Number(gradeValue))) {
+            return {
+              studentId: s.id,
+              grade: Number(gradeValue),
+              subjectId,
+              quarter,
+            }
+          }
+          return null
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null)
+
+      if (gradesToSubmit.length === 0) {
+        show('Please enter at least one grade before submitting')
         return
       }
-      const payload = students.map((s) => ({
-        studentId: s.id,
-        grade: Number(grades[s.id]),
-        subjectId,
-        quarter,
-      }))
+
       const res = await fetch('/api/grades/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sectionId, items: payload }),
+        body: JSON.stringify({ sectionId, items: gradesToSubmit }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to submit grades')
-      show('Grades submitted')
+      show(`Grades submitted for ${gradesToSubmit.length} student(s)`)
       router.back()
     } catch (e: any) {
       show(e.message || 'Failed to submit grades')
@@ -79,6 +97,9 @@ function SubmitInner() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold text-gray-900 mb-4">Enter Grades</h1>
+      <p className="text-sm text-gray-600 mb-4">
+        Pre-filled values are existing grades. You can edit them or leave empty for students without grades.
+      </p>
       <div className="bg-white border border-gray-200 rounded-lg overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -110,7 +131,7 @@ function SubmitInner() {
         </table>
       </div>
       <div className="mt-4 flex justify-end">
-        <button onClick={submitGrades} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Submit</button>
+        <button onClick={submitGrades} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Save Grades</button>
       </div>
     </div>
   )
