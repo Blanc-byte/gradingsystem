@@ -36,7 +36,7 @@ export default function LoginPage() {
       } else {
         setError(data.error || 'Login failed')
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
@@ -116,7 +116,7 @@ export default function LoginPage() {
 
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
                   Sign up here
                 </Link>

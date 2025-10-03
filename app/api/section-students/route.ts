@@ -66,13 +66,13 @@ export async function GET(request: NextRequest) {
     }
     const students = rawStudents.map((s) => {
       const quarters: Record<number, number | null> = { 1: null, 2: null, 3: null, 4: null }
-      const sourceGrades = grouped[s.id] ?? []
-      for (const g of sourceGrades as any[]) {
-        const q = Number((g as any).quarter)
+      const sourceGrades: Array<{ quarter: number; grade: number; id?: number }> = grouped[s.id] ?? []
+      for (const g of sourceGrades) {
+        const q = Number(g.quarter)
         if (q >= 1 && q <= 4) {
           // choose latest by id
           if (quarters[q] == null) {
-            quarters[q] = Number((g as any).grade)
+            quarters[q] = Number(g.grade)
           }
         }
       }
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       }
     })
     return NextResponse.json({ students })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch students' }, { status: 500 })
   }
 }

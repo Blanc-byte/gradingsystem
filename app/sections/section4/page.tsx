@@ -100,7 +100,7 @@ function ReportsInner() {
       
       // Calculate general average and remarks for each student - only from subjects with grades
       const studentsWithAverages = await Promise.all(
-        studentsData.students.map(async (student: any) => {
+        studentsData.students.map(async (student: { id: number; fullname: string; quarters?: Record<number, number | null>; generalAverage?: number; remarks?: string }) => {
           // Get all subject grades for this student - only subjects with actual grades
           const allSubjectGrades = []
           
@@ -109,7 +109,7 @@ function ReportsInner() {
             const subjectGradesData = await subjectGradesRes.json()
             
             if (subjectGradesRes.ok && subjectGradesData.students) {
-              const studentData = subjectGradesData.students.find((s: any) => s.id === student.id)
+              const studentData = subjectGradesData.students.find((s: { id: number; quarters?: Record<number, number | null> }) => s.id === student.id)
               if (studentData && studentData.quarters) {
                 const quarters = studentData.quarters
                 const grades = Object.values(quarters).filter(grade => grade !== null && grade !== undefined) as number[]
@@ -136,8 +136,9 @@ function ReportsInner() {
       )
       
       setStudents(studentsWithAverages)
-    } catch (e: any) {
-      show(e.message || 'Failed to load data')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to load data'
+      show(message)
     } finally {
       setLoading(false)
     }
@@ -170,7 +171,7 @@ function ReportsInner() {
         const subjectGradesData = await subjectGradesRes.json()
         
         if (subjectGradesRes.ok && subjectGradesData.students) {
-          const studentData = subjectGradesData.students.find((s: any) => s.id === student.id)
+          const studentData = subjectGradesData.students.find((s: { id: number; quarters?: Record<number, number | null> }) => s.id === student.id)
           if (studentData && studentData.quarters) {
             const quarters = studentData.quarters
             const grades = Object.values(quarters).filter(grade => grade !== null && grade !== undefined) as number[]
@@ -205,8 +206,9 @@ function ReportsInner() {
       
       setSelectedStudent(studentReport)
       setShowReportModal(true)
-    } catch (e: any) {
-      show(e.message || 'Failed to load student report data')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to load student report data'
+      show(message)
     } finally {
       setLoadingReport(false)
     }

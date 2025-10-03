@@ -12,7 +12,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     const section = await prisma.section.findUnique({ where: { id } })
     if (!section) return NextResponse.json({ error: 'Section not found' }, { status: 404 })
     return NextResponse.json({ section })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch section' }, { status: 500 })
   }
 }
@@ -24,14 +24,14 @@ export async function PATCH(_request: NextRequest, context: { params: Promise<{ 
   if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
   try {
     const body = await _request.json()
-    const data: any = {}
+    const data: { name?: string; grade_year?: number; sy?: string; locked?: boolean } = {}
     if (body.name !== undefined) data.name = body.name
     if (body.grade_year !== undefined) data.grade_year = body.grade_year
     if (body.sy !== undefined) data.sy = body.sy
     if (body.locked !== undefined) data.locked = Boolean(body.locked)
     const section = await prisma.section.update({ where: { id }, data })
     return NextResponse.json({ section })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to update section' }, { status: 500 })
   }
 }
@@ -44,7 +44,7 @@ export async function DELETE(_request: NextRequest, context: { params: Promise<{
   try {
     await prisma.section.delete({ where: { id } })
     return NextResponse.json({ success: true })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete section' }, { status: 500 })
   }
 }

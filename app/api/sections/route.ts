@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       },
     })
     return NextResponse.json({ sections })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch sections' }, { status: 500 })
   }
 }
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       data: { name, grade_year, teacherId: Number(teacherId), sy },
     })
     return NextResponse.json({ section }, { status: 201 })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create section' }, { status: 500 })
   }
 }

@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ sections })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch section stats' }, { status: 500 })
   }
 }

@@ -30,20 +30,21 @@ function SubmitInner() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to load students')
       
-      const studentsData = data.students.map((s: any) => ({ id: s.id, fullname: s.fullname }))
+      const studentsData = data.students.map((s: { id: number; fullname: string }) => ({ id: s.id, fullname: s.fullname }))
       setStudents(studentsData)
       
       // Pre-fill existing grades for this quarter
       const existingGrades: Record<number, string> = {}
-      data.students.forEach((s: any) => {
+      data.students.forEach((s: { id: number; quarters?: Record<number, number | null> }) => {
         const existingGrade = s.quarters?.[quarter]
         if (existingGrade !== null && existingGrade !== undefined) {
           existingGrades[s.id] = String(existingGrade)
         }
       })
       setGrades(existingGrades)
-    } catch (e: any) {
-      show(e.message || 'Failed to load students')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to load students'
+      show(message)
     } finally {
       setLoading(false)
     }
@@ -85,8 +86,9 @@ function SubmitInner() {
       if (!res.ok) throw new Error(data.error || 'Failed to submit grades')
       show(`Grades submitted for ${gradesToSubmit.length} student(s)`)
       router.back()
-    } catch (e: any) {
-      show(e.message || 'Failed to submit grades')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to submit grades'
+      show(message)
     }
   }
 

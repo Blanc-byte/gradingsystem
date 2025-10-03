@@ -57,9 +57,9 @@ function DashboardInner() {
           totalStudents += students.length
           
           // Count failed grades only
-          students.forEach((student: any) => {
+          students.forEach((student: { quarters?: Record<number, number | null> }) => {
             if (student.quarters) {
-              Object.values(student.quarters).forEach((grade: any) => {
+              Object.values(student.quarters).forEach((grade: number | null) => {
                 if (grade !== null && grade !== undefined && grade < 75) {
                   failedGrades++
                 }
@@ -82,8 +82,9 @@ function DashboardInner() {
         failedGrades,
         recentActivity
       })
-    } catch (e: any) {
-      show(e.message || 'Failed to load dashboard data')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to load dashboard data'
+      show(message)
     } finally {
       setLoading(false)
     }

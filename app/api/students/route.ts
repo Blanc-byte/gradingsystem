@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       data: { fullname, sectionId: Number(sectionId) },
     })
     return NextResponse.json({ student }, { status: 201 })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create student' }, { status: 500 })
   }
 }

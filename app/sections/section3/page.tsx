@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ToastProvider, { useToast } from '@/app/components/ToastProvider'
 import SectionLoadingScreen from '@/app/components/SectionLoadingScreen'
@@ -50,8 +50,9 @@ function SubmitGradeInner() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to load sections')
       setSections(data.sections)
-    } catch (e: any) {
-      show(e.message || 'Failed to load sections')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to load sections'
+      show(message)
     } finally {
       setLoading(false)
     }
@@ -63,8 +64,9 @@ function SubmitGradeInner() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to load subjects')
       setSubjects(data.subjects)
-    } catch (e: any) {
-      show(e.message || 'Failed to load subjects')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to load subjects'
+      show(message)
     }
   }
 
@@ -102,8 +104,9 @@ function SubmitGradeInner() {
       }
       setSelectOpen(false)
       router.push(`/sections/section3/submit?${params.toString()}`)
-    } catch (e: any) {
-      show(e.message || 'Failed to check existing grades')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to check existing grades'
+      show(message)
     }
   }
 
@@ -215,7 +218,7 @@ function SubmitGradeInner() {
               <button onClick={() => setSelectOpen(false)} className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">Cancel</button>
               <button onClick={proceedSubmit} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Proceed</button>
             </div>
-            <p className="mt-3 text-xs text-gray-600">Note: If grades already exist for the selected quarter, you'll be reminded before proceeding.</p>
+            <p className="mt-3 text-xs text-gray-600">Note: If grades already exist for the selected quarter, you&apos;ll be reminded before proceeding.</p>
           </div>
         </div>
       )}

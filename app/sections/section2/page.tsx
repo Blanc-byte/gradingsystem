@@ -40,8 +40,9 @@ function Section2Inner() {
 			const data = await res.json()
 			if (!res.ok) throw new Error(data.error || 'Failed to load sections')
 			setSections(data.sections)
-    } catch (e: any) {
-      show(e.message || 'Failed to load sections')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to load sections'
+      show(message)
 		} finally {
 			setLoading(false)
 		}
@@ -65,8 +66,9 @@ function Section2Inner() {
 			setNewSectionName('')
 			// Redirect to the section profile page
 			router.push(`/sections/section2/${data.section.id}`)
-    } catch (e: any) {
-      show(e.message || 'Failed to create section')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to create section'
+      show(message)
 		}
 	}
 

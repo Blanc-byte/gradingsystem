@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       },
     })
     return NextResponse.json({ exists: count > 0, count })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to check grades' }, { status: 500 })
   }
 }

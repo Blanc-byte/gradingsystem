@@ -41,8 +41,9 @@ function SectionProfileInner() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to fetch section')
       setSection(data.section as Section)
-    } catch (e: any) {
-      show(e.message || 'Failed to fetch section')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to fetch section'
+      show(message)
       setSection(null)
     } finally {
       setLoadingSection(false)
@@ -62,8 +63,9 @@ function SectionProfileInner() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to fetch students')
       setStudents(data.students)
-    } catch (e: any) {
-      show(e.message || 'Failed to fetch students')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to fetch students'
+      show(message)
     }
   }
 
@@ -76,8 +78,9 @@ function SectionProfileInner() {
       if (data.subjects && data.subjects.length > 0) {
         setFilterSubjectId((prev) => (prev ? prev : data.subjects[0].id))
       }
-    } catch (e: any) {
-      show(e.message || 'Failed to fetch subjects')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to fetch subjects'
+      show(message)
     }
   }
 
@@ -138,8 +141,9 @@ function SectionProfileInner() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to update lock')
       setSection(data.section)
-    } catch (e: any) {
-      show(e.message || 'Failed to update lock')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to update lock'
+      show(message)
     } finally {
       setToggling(false)
     }

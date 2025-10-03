@@ -9,15 +9,15 @@ export async function GET() {
     // Primary path: use Prisma model
     const subjects = await prisma.subjects.findMany({ orderBy: { name: 'asc' } })
     return NextResponse.json({ subjects })
-  } catch (e) {
+  } catch {
     try {
       // Fallback 1: quoted table name "Subjects"
-      const rows = await prisma.$queryRawUnsafe<any[]>(`SELECT id, name FROM "Subjects" ORDER BY name ASC`)
+      const rows = await prisma.$queryRawUnsafe<Array<{ id: number; name: string }>>(`SELECT id, name FROM "Subjects" ORDER BY name ASC`)
       return NextResponse.json({ subjects: rows })
     } catch {}
     try {
       // Fallback 2: lowercase table name subjects
-      const rows2 = await prisma.$queryRawUnsafe<any[]>(`SELECT id, name FROM subjects ORDER BY name ASC`)
+      const rows2 = await prisma.$queryRawUnsafe<Array<{ id: number; name: string }>>(`SELECT id, name FROM subjects ORDER BY name ASC`)
       return NextResponse.json({ subjects: rows2 })
     } catch {}
     return NextResponse.json({ error: 'Failed to fetch subjects' }, { status: 500 })

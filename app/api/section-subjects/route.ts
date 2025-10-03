@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       orderBy: { name: 'asc' },
     })
     return NextResponse.json({ subjects })
-  } catch (e) {
+  } catch {
     // Fallback raw SQL if needed
     try {
       const raw = await prisma.$queryRaw<Array<{ id: number; name: string }>>`
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         ORDER BY s.name ASC
       `
       return NextResponse.json({ subjects: raw })
-    } catch (e2) {
+    } catch {
       return NextResponse.json({ error: 'Failed to fetch section subjects' }, { status: 500 })
     }
   }
