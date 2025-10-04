@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateTeacher } from '@/app/lib/auth'
 
 export async function POST(request: NextRequest) {
+  
+  
   try {
     const { username, password } = await request.json()
 
@@ -22,6 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // In a real app, you'd set a JWT token or session cookie here
+    console.log('DB URL:', process.env.DATABASE_URL)
     return NextResponse.json({
       success: true,
       teacher
