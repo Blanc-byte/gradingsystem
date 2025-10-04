@@ -1,4 +1,4 @@
-import { prisma } from './prisma'
+import supabase from './supabase'
 import bcrypt from 'bcryptjs'
 
 export async function hashPassword(password: string): Promise<string> {
@@ -17,18 +17,28 @@ export async function createTeacher(data: {
 }) {
   const hashedPassword = await hashPassword(data.password)
   
-  return prisma.teachers.create({
-    data: {
+  const { data: teacher, error } = await supabase
+    .from('Teachers')
+    .insert({
       ...data,
       password: hashedPassword
-    }
-  })
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return teacher
 }
 
 export async function findTeacherByUsername(username: string) {
-  return prisma.teachers.findUnique({
-    where: { username }
-  })
+  const { data: teacher, error } = await supabase
+    .from('Teachers')
+    .select('*')
+    .eq('username', username)
+    .single()
+
+  if (error) return null
+  return teacher
 }
 
 export async function validateTeacher(username: string, password: string) {

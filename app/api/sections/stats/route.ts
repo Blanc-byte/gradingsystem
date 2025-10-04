@@ -1,7 +1,7 @@
 export const revalidate = 0
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/app/lib/prisma'
+import supabase from '@/app/lib/supabase'
 
 // GET /api/sections/stats?grade_year=&sy=&q=
 export async function GET(request: NextRequest) {
@@ -13,24 +13,26 @@ export async function GET(request: NextRequest) {
   const grade_year = gradeYearParam ? Number(gradeYearParam) : undefined
 
   try {
-    const sections = await prisma.section.findMany({
-      where: {
-        ...(grade_year ? { grade_year } : {}),
-        ...(sy ? { sy } : {}),
-        ...(q ? { name: { contains: q, mode: 'insensitive' } } : {}),
-      },
-      select: {
-        id: true,
-        name: true,
-        sy: true,
-        grade_year: true,
-        locked: true,
-        teacher: { select: { fullname: true } },
-        _count: { select: { students: true } },
-      },
-      orderBy: { id: 'desc' },
-    })
+    let query = supabase
+      .from('Section')
+      .select(`
+        id,
+        name,
+        sy,
+        grade_year,
+        locked,
+        teacher:Teachers(fullname),
+        students:Students(count)
+      `)
+      .order('id', { ascending: false })
 
+    if (grade_year) query = query.eq('grade_year', grade_year)
+    if (sy) query = query.eq('sy', sy)
+    if (q) query = query.ilike('name', `%${q}%`)
+
+    const { data: sections, error } = await query
+
+    if (error) throw error
     return NextResponse.json({ sections })
   } catch {
     return NextResponse.json({ error: 'Failed to fetch section stats' }, { status: 500 })

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/app/lib/prisma'
+import supabase from '@/app/lib/supabase'
 
 // PATCH /api/students/:id
 export async function PATCH(
@@ -13,7 +13,15 @@ export async function PATCH(
     const body = await request.json()
     const data: { fullname?: string } = {}
     if (body.fullname !== undefined) data.fullname = body.fullname
-    const student = await prisma.students.update({ where: { id }, data })
+    
+    const { data: student, error } = await supabase
+      .from('Students')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
     return NextResponse.json({ student })
   } catch {
     return NextResponse.json({ error: 'Failed to update student' }, { status: 500 })
@@ -29,7 +37,12 @@ export async function DELETE(
   const id = Number(idParam)
   if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
   try {
-    await prisma.students.delete({ where: { id } })
+    const { error } = await supabase
+      .from('Students')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json({ error: 'Failed to delete student' }, { status: 500 })

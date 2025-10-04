@@ -1,7 +1,7 @@
 export const revalidate = 0
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/app/lib/prisma'
+import supabase from '@/app/lib/supabase'
 
 // GET /api/sections?teacherId=1 → list sections for teacher
 export async function GET(request: NextRequest) {
@@ -11,18 +11,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'teacherId is required' }, { status: 400 })
   }
   try {
-    const sections = await prisma.section.findMany({
-      where: { teacherId },
-      orderBy: { id: 'desc' },
-      select: {
-        id: true,
-        name: true,
-        grade_year: true,
-        sy: true,
-        locked: true,
-        teacherId: true,
-      },
-    })
+    const { data: sections, error } = await supabase
+      .from('Section')
+      .select('id, name, grade_year, sy, locked, teacherId')
+      .eq('teacherId', teacherId)
+      .order('id', { ascending: false })
+
+    if (error) throw error
     return NextResponse.json({ sections })
   } catch {
     return NextResponse.json({ error: 'Failed to fetch sections' }, { status: 500 })
@@ -37,13 +32,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'name, grade_year, teacherId required' }, { status: 400 })
     }
     // Enforce one section per teacher in API
-    const existing = await prisma.section.findFirst({ where: { teacherId: Number(teacherId) } })
+    const { data: existing } = await supabase
+      .from('Section')
+      .select('id')
+      .eq('teacherId', Number(teacherId))
+      .single()
+
     if (existing) {
       return NextResponse.json({ error: 'Teacher already has a section' }, { status: 409 })
     }
-    const section = await prisma.section.create({
-      data: { name, grade_year, teacherId: Number(teacherId), sy },
-    })
+    
+    const { data: section, error } = await supabase
+      .from('Section')
+      .insert({ name, grade_year, teacherId: Number(teacherId), sy })
+      .select()
+      .single()
+
+    if (error) throw error
     return NextResponse.json({ section }, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Failed to create section' }, { status: 500 })
