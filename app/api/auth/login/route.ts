@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // In a real app, you'd set a JWT token or session cookie here
-    console.log('DB URL:', process.env.DATABASE_URL)
+    // // In a real app, you'd set a JWT token or session cookie here
+    // console.log('DB URL:', process.env.DATABASE_URL)
     return NextResponse.json({
       success: true,
       teacher

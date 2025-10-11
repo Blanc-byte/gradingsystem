@@ -52,10 +52,10 @@ function SectionProfileInner() {
 
   async function loadStudents() {
     try {
-      if (!filterSubjectId) {
-        setStudents([])
-        return
-      }
+      // if (!filterSubjectId) {
+      //   setStudents([])
+      //   return
+      // }
       const params = new URLSearchParams()
       params.set('sectionId', String(sectionId))
       params.set('subjectId', String(filterSubjectId))
